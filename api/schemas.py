@@ -1,0 +1,52 @@
+from pydantic import BaseModel
+from datetime import datetime
+
+
+class AttendeeBase(BaseModel):
+    name: str
+    branch: str
+    year: str
+
+
+class AttendeeCreate(AttendeeBase):
+    pass
+
+
+class Attendee(AttendeeBase):
+    attendee_id: int
+
+    class Config:
+        orm_mode = True
+
+
+class EventBase(BaseModel):
+    name: str
+    datetime: datetime
+
+
+class EventCreate(EventBase):
+    pass
+
+
+class Event(EventBase):
+    event_id: int
+
+    class Config:
+        orm_mode = True
+
+
+class TicketBase(BaseModel):
+    attendee: Attendee
+    event: Event
+
+
+class TicketCreate(TicketBase):
+    pass
+
+
+class Ticket(TicketBase):
+    ticket_id: int
+    checked_in: bool
+
+    class Config:
+        orm_mode = True
