@@ -14,6 +14,7 @@ class AttendeeCreate(AttendeeBase):
 
 class Attendee(AttendeeBase):
     attendee_id: int
+    attendee_token: str
 
     class Config:
         orm_mode = True
@@ -30,6 +31,7 @@ class EventCreate(EventBase):
 
 class Event(EventBase):
     event_id: int
+    event_token: str
 
     class Config:
         orm_mode = True
@@ -47,6 +49,7 @@ class TicketCreate(TicketBase):
 class Ticket(TicketBase):
     ticket_id: int
     checked_in: bool
+    ticket_token: str
 
     class Config:
         orm_mode = True
