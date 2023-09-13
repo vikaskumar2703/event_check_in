@@ -38,8 +38,8 @@ class Event(EventBase):
 
 
 class TicketBase(BaseModel):
-    attendee: Attendee
-    event: Event
+    attendee_id: int
+    event_id: int
 
 
 class TicketCreate(TicketBase):

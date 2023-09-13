@@ -24,6 +24,6 @@ class Ticket(Base):
     __tablename__ = 'ticket'
     ticket_id = Column(Integer(), primary_key=True)
     checked_in = Column(Boolean(), nullable=False, default=False)
-    attendee = Column('Attendee', ForeignKey('attendee.attendee_id'), nullable=False)
-    event = Column('Event', ForeignKey('event.event_id'), nullable=False)
+    attendee_id = Column('Attendee', ForeignKey('attendee.attendee_id'), nullable=False)
+    event_id = Column('Event', ForeignKey('event.event_id'), nullable=False)
     ticket_token = Column(String(), nullable=False)
