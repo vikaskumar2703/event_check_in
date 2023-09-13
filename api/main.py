@@ -1,8 +1,10 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from . import models, schemas, cruds
 from .database import SessionLocal, engine
+
+from .utils import check_valid
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -19,9 +21,11 @@ def get_db():
 
 @app.post("/attendees/", response_model=schemas.Attendee, tags=['attendees'])
 def create_attendee(attendee: schemas.AttendeeCreate, db: Session = Depends(get_db)):
-    db_attendee = cruds.get_attendee_by_name(db, name=attendee.name)
+    if not check_valid(attendee.email):
+        raise HTTPException(status_code=400, detail="Email not valid")
+    db_attendee = cruds.get_attendee_by_email(db, email=attendee.email)
     if db_attendee:
-        raise HTTPException(status_code=400, detail="User already registered")
+        raise HTTPException(status_code=400, detail="Email already registered")
     return cruds.create_attendee(db=db, attendee=attendee)
 
 
@@ -97,5 +101,5 @@ def get_attendee(attendee_token: str, event_token: str, ticket_token: str, db: S
         raise HTTPException(status_code=404, detail="Ticket not found")
     db_ticket = cruds.check_in_ticket(db=db, ticket_token=ticket_token, attendee_token=attendee_token, event_token=event_token)
     if db_ticket is None:
-        raise HTTPException(status_code=404, detail="Ticket invalid")
+        raise HTTPException(status_code=400, detail="Ticket invalid")
     return db_ticket

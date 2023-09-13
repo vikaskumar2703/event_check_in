@@ -7,6 +7,7 @@ class Attendee(Base):
     __tablename__ = 'attendee'
     attendee_id = Column(Integer(), primary_key=True)
     name = Column(String(), nullable=False)
+    email = Column(String(), nullable=False)
     branch = Column(String(), nullable=False)
     year = Column(Integer(), nullable=False)
     attendee_token = Column(String(), nullable=False)

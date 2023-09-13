@@ -6,6 +6,7 @@ class AttendeeBase(BaseModel):
     name: str
     branch: str
     year: str
+    email: str
 
 
 class AttendeeCreate(AttendeeBase):

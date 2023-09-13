@@ -11,6 +11,10 @@ def get_attendee_by_name(db: Session, name: str):
     return db.query(models.Attendee).filter(models.Attendee.name==name).first()
 
 
+def get_attendee_by_email(db: Session, email: str):
+    return db.query(models.Attendee).filter(models.Attendee.email==email).first()
+
+
 def get_attendee_by_token(db: Session, token: str):
     return db.query(models.Attendee).filter(models.Attendee.attendee_token==token).first()
 
@@ -21,7 +25,7 @@ def get_attendees(db: Session, skip: int = 0, limit: int = 100):
 
 def create_attendee(db: Session, attendee: schemas.AttendeeCreate):
     token = token_hex(3)
-    db_attendee = models.Attendee(name=attendee.name, branch=attendee.branch, year=attendee.year,attendee_token=token)
+    db_attendee = models.Attendee(name=attendee.name, email=attendee.email, branch=attendee.branch, year=attendee.year,attendee_token=token)
     db.add(db_attendee)
     db.commit()
     db.refresh(db_attendee)
