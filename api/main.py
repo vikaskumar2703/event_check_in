@@ -1,4 +1,7 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, requests
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 
 from . import models, schemas, cruds
@@ -10,6 +13,8 @@ models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
+app.mount('/static', StaticFiles(directory='api/static'), name='static')
+templates = Jinja2Templates(directory="templates")
 
 def get_db():
     db = SessionLocal()
@@ -18,6 +23,11 @@ def get_db():
     finally:
         db.close()
 
+
+@app.get("/scan")
+def scanner(response_class=HTMLResponse):
+    return {'hello':'world'}
+    return templates.TemplateResponse('scanner.html', {"request": requests})
 
 @app.post("/attendees/", response_model=schemas.Attendee, tags=['attendees'])
 def create_attendee(attendee: schemas.AttendeeCreate, db: Session = Depends(get_db)):
@@ -94,8 +104,8 @@ def get_tickets(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     return tickets
 
 
-@app.get('/check_in/', response_model=schemas.Ticket, tags=['check-in'])
-def get_attendee(attendee_token: str, event_token: str, ticket_token: str, db: Session = Depends(get_db)):
+@app.post('/check_in/', response_model=schemas.Ticket, tags=['check-in'])
+def check_in(attendee_token: str, event_token: str, ticket_token: str, db: Session = Depends(get_db)):
     db_ticket = cruds.get_ticket_by_token(db=db, token=ticket_token)
     if db_ticket is None:
         raise HTTPException(status_code=404, detail="Ticket not found")
