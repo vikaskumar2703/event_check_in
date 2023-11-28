@@ -74,14 +74,14 @@ def get_tickets_by_event(db: Session, event_id: int):
 
 
 def check_ticket_exist(db: Session, attendee_id: int, event_id: int):
-    return db.query(models.Ticket).filter(models.Ticket.event_id==event_id).filter(models.Ticket.event_id==event_id).first()
+    return db.query(models.Ticket).filter(models.Ticket.attendee_id==attendee_id).filter(models.Ticket.event_id==event_id).first()
 
 
 def get_tickets(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Ticket).offset(skip).limit(limit).all()
 
 
-def check_in_ticket(db: Session, ticket_token: int, attendee_token: int, event_token: int):
+def check_in_ticket(db: Session, ticket_token: str, attendee_token: str, event_token: str):
     db_ticket = get_ticket_by_token(db=db, token=ticket_token)
     db_attendee = get_attendee(db=db, attendee_id=db_ticket.attendee_id)
     db_event = get_event(db=db, event_id=db_ticket.event_id)
@@ -93,7 +93,7 @@ def check_in_ticket(db: Session, ticket_token: int, attendee_token: int, event_t
 
 
 def create_ticket(db: Session, ticket: schemas.TicketCreate):
-    token = token_hex(3)
+    token = token_hex(3)  
     db_ticket = models.Ticket(attendee_id=ticket.attendee_id, event_id=ticket.event_id, ticket_token=token)
     db.add(db_ticket)
     db.commit()
