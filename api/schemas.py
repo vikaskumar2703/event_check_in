@@ -46,10 +46,7 @@ class TicketBase(BaseModel):
 class TicketCreate(TicketBase):
     pass
 
-class  QR(BaseModel):
-    attendee_token : str
-    ticket_token : str
-    event_token : str
+
 
 class Ticket(TicketBase):
     ticket_id: int
