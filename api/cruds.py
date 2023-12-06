@@ -100,3 +100,11 @@ def create_ticket(db: Session, ticket: schemas.TicketCreate):
     db.commit()
     db.refresh(db_ticket)
     return db_ticket
+
+
+def get_qr_str(db: Session, ticket_token: str):
+    db_ticket = get_ticket_by_token(db=db, token=ticket_token)
+    db_attendee = get_attendee(db=db, attendee_id=db_ticket.attendee_id)
+    db_event = get_event(db=db, event_id=db_ticket.event_id)
+    qr_str = db_attendee.attendee_token+db_event.event_token+db_ticket.ticket_token
+    return qr_str

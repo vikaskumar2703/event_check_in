@@ -127,3 +127,15 @@ def check_in(qr_str: str, db: Session = Depends(get_db)):
     return {'attendee':{'attendee_id':db_attendee.attendee_id,'name':db_attendee.name,'branch':db_attendee.branch,'year':db_attendee.year},
             'event':{'attendee_id':db_event.event_id,'name':db_event.name},
             'ticket':{'ticket_id':db_ticket.ticket_id,'checked_in':db_ticket.checked_in}}
+
+
+@app.get('/qr_str/', tags=['misc'])
+def get_qr_str(ticket_token: str, db: Session = Depends(get_db)):
+    qr_str = cruds.get_qr_str(db=db, ticket_token=ticket_token)
+    return {'qr_str':qr_str}
+    
+
+## Todo
+# @app.post('/revert_check_in/', tags=['check-in'])
+# def revert_check_in(qr_str: str, db: Session = Depends(get_db)):
+    
