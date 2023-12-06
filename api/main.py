@@ -1,7 +1,4 @@
 from fastapi import FastAPI, Depends, HTTPException, requests
-from fastapi.responses import HTMLResponse
-from fastapi.templating import Jinja2Templates
-from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 
 from . import models, schemas, cruds
@@ -26,8 +23,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-# app.mount('/static', StaticFiles(directory='api/static'), name='static')
-# templates = Jinja2Templates(directory="templates")
 
 def get_db():
     db = SessionLocal()
@@ -36,11 +31,6 @@ def get_db():
     finally:
         db.close()
 
-
-@app.get("/scan")
-def scanner(response_class=HTMLResponse):
-    return {'hello':'world'}
-    return templates.TemplateResponse('scanner.html', {"request": requests})
 
 @app.post("/attendees/", response_model=schemas.Attendee, tags=['attendees'])
 def create_attendee(attendee: schemas.AttendeeCreate, db: Session = Depends(get_db)):
@@ -116,13 +106,24 @@ def get_tickets(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     tickets = cruds.get_tickets(db=db, skip=skip, limit=limit)
     return tickets
 
-
-@app.post('/check_in/', response_model=schemas.Ticket, tags=['check-in'])
-def check_in(attendee_token: str, event_token: str, ticket_token: str, db: Session = Depends(get_db)):
+# qr_str = attendee_token+event_token+ticket_token
+@app.post('/check_in/', tags=['check-in'])
+def check_in(qr_str: str, db: Session = Depends(get_db)):
+    attendee_token = qr_str[:6]
+    event_token = qr_str[6:12]
+    ticket_token = qr_str[12:]
+    db_attendee = cruds.get_attendee_by_token(db=db, token=attendee_token)
+    if db_attendee is None:
+        raise HTTPException(status_code=404, detail="Attendee not found")
+    db_event = cruds.get_event_by_token(db=db, token=event_token)
+    if db_event is None:
+        raise HTTPException(status_code=404, detail="Event not found")
     db_ticket = cruds.get_ticket_by_token(db=db, token=ticket_token)
     if db_ticket is None:
         raise HTTPException(status_code=404, detail="Ticket not found")
     db_ticket = cruds.check_in_ticket(db=db, ticket_token=ticket_token, attendee_token=attendee_token, event_token=event_token)
     if db_ticket is None:
         raise HTTPException(status_code=400, detail="Ticket invalid")
-    return db_ticket
+    return {'attendee':{'attendee_id':db_attendee.attendee_id,'name':db_attendee.name,'branch':db_attendee.branch,'year':db_attendee.year},
+            'event':{'attendee_id':db_event.event_id,'name':db_event.name},
+            'ticket':{'ticket_id':db_ticket.ticket_id,'checked_in':db_ticket.checked_in}}

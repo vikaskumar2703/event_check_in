@@ -90,6 +90,7 @@ def check_in_ticket(db: Session, ticket_token: str, attendee_token: str, event_t
         db.commit()
         db.refresh(db_ticket)
         return db_ticket
+    return None
 
 
 def create_ticket(db: Session, ticket: schemas.TicketCreate):
