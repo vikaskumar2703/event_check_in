@@ -5,7 +5,7 @@ from datetime import datetime
 class AttendeeBase(BaseModel):
     name: str
     branch: str
-    year: str
+    year: int
     email: str
 
 
@@ -45,6 +45,7 @@ class TicketBase(BaseModel):
 
 class TicketCreate(TicketBase):
     pass
+
 
 
 class Ticket(TicketBase):

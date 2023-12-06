@@ -9,12 +9,25 @@ from .database import SessionLocal, engine
 
 from .utils import check_valid
 
+from fastapi.middleware.cors import CORSMiddleware
+
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-app.mount('/static', StaticFiles(directory='api/static'), name='static')
-templates = Jinja2Templates(directory="templates")
+origins = [
+     "http://localhost:5173/",
+     "http://192.168.1.36:5173/"
+]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+# app.mount('/static', StaticFiles(directory='api/static'), name='static')
+# templates = Jinja2Templates(directory="templates")
 
 def get_db():
     db = SessionLocal()
