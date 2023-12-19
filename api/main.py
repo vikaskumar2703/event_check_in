@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Depends, HTTPException, requests
+from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
 from . import models, schemas, cruds
@@ -156,3 +157,9 @@ def revert_check_in(qr_str: str, db: Session = Depends(get_db)):
     return {'attendee':{'attendee_id':db_attendee.attendee_id,'name':db_attendee.name,'branch':db_attendee.branch,'year':db_attendee.year},
             'event':{'attendee_id':db_event.event_id,'name':db_event.name},
             'ticket':{'ticket_id':db_ticket.ticket_id,'checked_in':db_ticket.checked_in}}
+    
+    
+@app.get('/gen_qr/', tags=['misc'], responses = {200:{"content":{"image/png": {}}}}, response_class=Response)
+def gen_qr_img(qr_str: str):
+    qr_img: bytes = cruds.qr_image_gen(qr_str=qr_str)
+    return Response(content=qr_img, media_type='image/png')
