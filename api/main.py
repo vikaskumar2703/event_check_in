@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Depends, HTTPException, requests
+from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
 from . import models, schemas, cruds
@@ -136,6 +137,29 @@ def get_qr_str(ticket_token: str, db: Session = Depends(get_db)):
     
 
 ## Todo
-# @app.post('/revert_check_in/', tags=['check-in'])
-# def revert_check_in(qr_str: str, db: Session = Depends(get_db)):
+@app.post('/revert_check_in/', tags=['check-in'])
+def revert_check_in(qr_str: str, db: Session = Depends(get_db)):
+    attendee_token = qr_str[:6]
+    event_token = qr_str[6:12]
+    ticket_token = qr_str[12:]
+    db_attendee = cruds.get_attendee_by_token(db=db, token=attendee_token)
+    if db_attendee is None:
+        raise HTTPException(status_code=404, detail="Attendee not found")
+    db_event = cruds.get_event_by_token(db=db, token=event_token)
+    if db_event is None:
+        raise HTTPException(status_code=404, detail="Event not found")
+    db_ticket = cruds.get_ticket_by_token(db=db, token=ticket_token)
+    if db_ticket is None:
+        raise HTTPException(status_code=404, detail="Ticket not found")
+    db_ticket = cruds.revert_check_in(db=db, ticket_token=ticket_token, attendee_token=attendee_token, event_token=event_token)
+    if db_ticket is None:
+        raise HTTPException(status_code=400, detail="Ticket invalid")
+    return {'attendee':{'attendee_id':db_attendee.attendee_id,'name':db_attendee.name,'branch':db_attendee.branch,'year':db_attendee.year},
+            'event':{'attendee_id':db_event.event_id,'name':db_event.name},
+            'ticket':{'ticket_id':db_ticket.ticket_id,'checked_in':db_ticket.checked_in}}
     
+    
+@app.get('/gen_qr/', tags=['misc'], responses = {200:{"content":{"image/png": {}}}}, response_class=Response)
+def gen_qr_img(qr_str: str):
+    qr_img: bytes = cruds.qr_image_gen(qr_str=qr_str)
+    return Response(content=qr_img, media_type='image/png')

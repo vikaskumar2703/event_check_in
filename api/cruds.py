@@ -1,6 +1,8 @@
 from sqlalchemy.orm import Session
 from secrets import token_hex
 from . import models, schemas
+from io import BytesIO
+import segno
 
 
 def get_attendee(db: Session, attendee_id: int):
@@ -108,3 +110,22 @@ def get_qr_str(db: Session, ticket_token: str):
     db_event = get_event(db=db, event_id=db_ticket.event_id)
     qr_str = db_attendee.attendee_token+db_event.event_token+db_ticket.ticket_token
     return qr_str
+
+
+def revert_check_in(db: Session, ticket_token: str, attendee_token: str, event_token: str):
+    db_ticket = get_ticket_by_token(db=db, token=ticket_token)
+    db_attendee = get_attendee(db=db, attendee_id=db_ticket.attendee_id)
+    db_event = get_event(db=db, event_id=db_ticket.event_id)
+    if db_attendee.attendee_token == attendee_token and db_event.event_token == event_token:
+        db_ticket.checked_in = False
+        db.commit()
+        db.refresh(db_ticket)
+        return db_ticket
+    return None
+
+def qr_image_gen(qr_str:str) -> bytes:
+    qr = segno.make_qr(qr_str)
+    qr_img = BytesIO()
+    qr.save(qr_img, kind='png', scale=8)
+    qr_img.seek(0)
+    return qr_img.read()
